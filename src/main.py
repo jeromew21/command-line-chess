@@ -1,6 +1,7 @@
 from Board import Board
 from InputParser import InputParser
 from AI import AI
+from Online import *
 import sys
 import random
 
@@ -166,11 +167,25 @@ def twoPlayerGame(board):
         makeMove(move, board)
 
 
+def playOnline():
+    playerChoiceInput = input("Host a game as White "
+                            "or join a game as Black [Wb]? ").lower()
+    if 'w' in playerChoiceInput or 'b' not in playerChoiceInput:
+        if 'w' not in playerChoiceInput and 'b' not in playerChoiceInput:
+            print("Invalid input, hosting game as White.")
+        runOnlineServer()
+    else:
+        host = input("Join hostname (IP Address) ? ")
+        connectOnlineServer(host)
+
+
 board = Board()
 
 try:
     if len(sys.argv) >= 2 and sys.argv[1] == "--two":
         twoPlayerGame(board)
+    elif len(sys.argv) >= 2 and sys.argv[1] == "--online":
+        playOnline()
     else:
         playerSide = askForPlayerSide()
         print()

@@ -32,3 +32,10 @@ def sendMessage(s, message, addr=None):
         s.sendto(message, addr)
     else:
         s.send(message)
+
+def getLocalIP():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    res = s.getsockname()[0]
+    s.close()
+    return res
