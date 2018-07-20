@@ -3,7 +3,7 @@ from InputParser import InputParser
 from Board import Board
 import sys
 
-PORT_NUMBER = 1970
+PORT_NUMBER = 1972
 
 WHITE = True
 BLACK = False
@@ -14,8 +14,10 @@ def makeMove(move, board):
 
 def runOnlineServer(host='localhost'):
     s = bindSocket(host, PORT_NUMBER, 0)
+    print()
     print("Hosting on {}".format(getLocalIP()))
     print("Waiting for opponent to connect")
+    print()
     try:
         connection, addr = accept(s)
 
@@ -107,8 +109,14 @@ def runOnlineServer(host='localhost'):
         sys.exit()
 
 def connectOnlineServer(host='localhost'):
-    s = connectSocket(host, PORT_NUMBER)
     try:
+        s = connectSocket(host, PORT_NUMBER)
+    except:
+        print("Error connecting to {}".format(host))
+        sys.exit()
+    try:
+        print()
+        print("Connecting to {}".format(host))
         recieved = waitForMessage(s)
 
         if recieved == "connected":
