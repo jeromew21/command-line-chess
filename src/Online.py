@@ -34,7 +34,7 @@ def runOnlineServer():
         sendMessage(connection, name, addr)
         recieved = waitForMessage(connection)
         if recieved:
-            print("We are connected!")
+            print("Connected to {}!".format(recieved))
             opponentName = recieved
         else:
             print("Connection denied")
@@ -140,7 +140,7 @@ def connectOnlineServer(host=None):
         recieved = waitForMessage(s)
 
         if recieved:
-            print("We are connected!")
+            print("Connected to {}!".format(recieved))
             opponentName = recieved
             sendMessage(s, name)
         else:
