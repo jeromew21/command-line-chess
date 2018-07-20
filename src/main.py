@@ -175,10 +175,12 @@ def playOnline():
             print("Invalid input, hosting game as White.")
         runOnlineServer()
     else:
-        host = input("Join hostname [localhost] ? ")
-        if not host:
-            host = "localhost"
-        connectOnlineServer(host)
+        searchChoice = input("Search your local network for a host [yN] ? ").lower()
+        if "y" in searchChoice:
+            connectOnlineServer()
+        else:
+            host = input("Enter hostname [localhost] ? ")
+            connectOnlineServer(host if host else "localhost")
 
 
 board = Board()

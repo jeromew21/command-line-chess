@@ -3,7 +3,7 @@ from InputParser import InputParser
 from Board import Board
 import sys
 
-PORT_NUMBER = 1972
+PORT_NUMBER = 1971
 
 WHITE = True
 BLACK = False
@@ -13,11 +13,16 @@ def makeMove(move, board):
     board.makeMove(move)
 
 def runOnlineServer(host='localhost'):
-    s = bindSocket(host, PORT_NUMBER, 0)
+    try:
+        s = bindSocket(host, PORT_NUMBER, 0)
+    except OSError:
+        print("Error: are you already hosting a game?")
+        sys.exit()
     print()
     print("Hosting on {}".format(getLocalIP()))
     print("Waiting for opponent to connect")
     print()
+    connection = None
     try:
         connection, addr = accept(s)
 
@@ -56,18 +61,7 @@ def runOnlineServer(host='localhost'):
 
             while True:
                 move = None
-                command = input("It's your move."
-                                " Type '?' for options. ? ")
-                if command.lower() == '?':
-                    printCommandOptions()
-                    continue
-                elif command.lower() == 'l':
-                    printAllLegalMoves(board, parserWhite)
-                    continue
-                elif command.lower() == 'r':
-                    move = getRandomMove(board, parserWhite)
-                elif command.lower() == 'exit' or command.lower() == 'quit':
-                    return
+                command = input("It's your move. Move ? ")
                 try:
                     move = parserWhite.parse(command)
                     break
@@ -102,18 +96,38 @@ def runOnlineServer(host='localhost'):
             makeMove(move, board)
         closeSocket(connection)
     except KeyboardInterrupt:
-        closeSocket(connection)
+        if connection:
+            closeSocket(connection)
     except BrokenPipeError:
         print("You were disconnected")
-        closeSocket(connection)
+        if connection:
+            closeSocket(connection)
         sys.exit()
 
-def connectOnlineServer(host='localhost'):
-    try:
-        s = connectSocket(host, PORT_NUMBER)
-    except:
-        print("Error connecting to {}".format(host))
-        sys.exit()
+def connectOnlineServer(host=None):
+    if not host:
+        subnet = '192.168.1.'
+        hostsAttempted = 0
+        for i in range(0, 256):
+            try:
+                host = subnet + str(i)
+                print("Trying to connect to {}".format(host))
+                s = connectSocket(host, PORT_NUMBER)
+                break
+            except KeyboardInterrupt:
+                sys.exit()
+            except:
+                s = None
+                hostsAttempted += 1
+        if s is None:
+            print("{} hosts attempted, none were available".format(hostsAttempted))
+            sys.exit()
+    else:
+        try:
+            s = connectSocket(host, PORT_NUMBER)
+        except:
+            print("Host didn't respond.")
+            sys.exit()
     try:
         print()
         print("Connecting to {}".format(host))
