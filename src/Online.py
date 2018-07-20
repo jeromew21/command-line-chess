@@ -3,7 +3,7 @@ from InputParser import InputParser
 from Board import Board
 import sys
 
-PORT_NUMBER = 1971
+PORT_NUMBER = 1972
 
 WHITE = True
 BLACK = False
@@ -13,6 +13,8 @@ def makeMove(move, board):
     board.makeMove(move)
 
 def runOnlineServer():
+    name = input("What's your name [White] ? ")
+    name = name if name else "White"
     host = getLocalIP()
     try:
         s = bindSocket(host, PORT_NUMBER, 0)
@@ -29,10 +31,11 @@ def runOnlineServer():
 
         print("Welcoming Connection: {}".format(addr))
 
-        sendMessage(connection, "connected", addr)
+        sendMessage(connection, name, addr)
         recieved = waitForMessage(connection)
-        if recieved == "connected":
+        if recieved:
             print("We are connected!")
+            opponentName = recieved
         else:
             print("Connection denied")
             closeSocket(s)
@@ -62,7 +65,7 @@ def runOnlineServer():
 
             while True:
                 move = None
-                command = input("It's your move. Move ? ")
+                command = input("It's your move, {}. Move ? ".format(name))
                 try:
                     move = parserWhite.parse(command)
                     break
@@ -85,7 +88,7 @@ def runOnlineServer():
                 return
 
             sendMessage(connection, str(board))
-            print("Waiting for opponent move")
+            print("Waiting for {} to move".format(opponentName))
             while True:
                 opponentMove = waitForMessage(connection)
                 try:
@@ -106,6 +109,8 @@ def runOnlineServer():
         sys.exit()
 
 def connectOnlineServer(host=None):
+    name = input("What's your name [Black] ? ")
+    name = name if name else "Black"
     if not host:
         subnet = '192.168.1.'
         hostsAttempted = 0
@@ -134,9 +139,10 @@ def connectOnlineServer(host=None):
         print("Connecting to {}".format(host))
         recieved = waitForMessage(s)
 
-        if recieved == "connected":
+        if recieved:
             print("We are connected!")
-            sendMessage(s, "connected")
+            opponentName = recieved
+            sendMessage(s, name)
         else:
             print("Connection denied")
             closeSocket(s)
@@ -151,11 +157,15 @@ def connectOnlineServer(host=None):
                     print("Stalemate! It's a draw")
                 closeSocket(s)
                 return
+            if not msg:
+                print("Disconnected.")
+                closeSocket(s)
+                sys.exit()
 
             print()
             print(msg)
             print()
-            print("Waiting for opponent to move")
+            print("Waiting for {} to move".format(opponentName))
             msg = waitForMessage(s)
             if msg in ("stalemate", "checkmate"):
                 if msg == "checkmate":
@@ -164,12 +174,16 @@ def connectOnlineServer(host=None):
                     print("Stalemate! It's a draw")
                 closeSocket(s)
                 return
+            if not msg:
+                print("Disconnected.")
+                closeSocket(s)
+                sys.exit()
 
             print()
             print(msg) #Got opponent's move
             print()
             while True:
-                command = input("It's your move. Move ? ")
+                command = input("It's your move, {}. Move ? ".format(name))
                 sendMessage(s, command)
                 response = waitForMessage(s)
                 if response == 'ok':
