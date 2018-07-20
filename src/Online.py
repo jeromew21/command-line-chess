@@ -12,14 +12,15 @@ def makeMove(move, board):
     print("Making move : " + move.notation)
     board.makeMove(move)
 
-def runOnlineServer(host='localhost'):
+def runOnlineServer():
+    host = getLocalIP()
     try:
         s = bindSocket(host, PORT_NUMBER, 0)
     except OSError:
         print("Error: are you already hosting a game?")
         sys.exit()
     print()
-    print("Hosting on {}".format(getLocalIP()))
+    print("Hosting on {}".format(host))
     print("Waiting for opponent to connect")
     print()
     connection = None
