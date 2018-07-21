@@ -171,16 +171,15 @@ def playOnline():
     playerChoiceInput = input("Host a game as White "
                             "or join a game as Black [Wb]? ").lower()
     if 'w' in playerChoiceInput or 'b' not in playerChoiceInput:
-        if 'w' not in playerChoiceInput and 'b' not in playerChoiceInput:
+        if playerChoiceInput and 'w' not in playerChoiceInput and 'b' not in playerChoiceInput:
             print("Invalid input, hosting game as White.")
-        runOnlineServer()
+        name = input("What's your name [White] ? ")
+        runOnlineServer(name if name else "White")
     else:
-        searchChoice = input("Search your local network for a host [yN] ? ").lower()
-        if "y" in searchChoice:
-            connectOnlineServer()
-        else:
-            host = input("Enter hostname [localhost] ? ")
-            connectOnlineServer(host if host else "localhost")
+        defaultHost = getLocalIP()
+        name = input("What's your name [Black] ? ")
+        host = input("Enter hostname [{}] ? ".format(defaultHost))
+        connectOnlineServer(host if host else defaultHost, name if name else "Black")
 
 
 board = Board()

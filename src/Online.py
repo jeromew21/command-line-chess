@@ -12,24 +12,22 @@ def makeMove(move, board):
     print("Making move : " + move.notation)
     board.makeMove(move)
 
-def runOnlineServer():
-    name = input("What's your name [White] ? ")
-    name = name if name else "White"
+def runOnlineServer(name="White"):
     host = getLocalIP()
     try:
         s = bindSocket(host, PORT_NUMBER, 0)
     except OSError:
-        print("Error: are you already hosting a game?")
+        print("Error starting online game, are you already hosting a game?")
         sys.exit()
     print()
     print("Hosting on {}".format(host))
-    print("Waiting for opponent to connect")
+    print("Waiting for opponent to connect...")
     print()
     connection = None
     try:
         connection, addr = accept(s)
 
-        print("Welcoming Connection: {}".format(addr))
+        print("Welcoming connection from {}".format(addr[0]))
 
         sendMessage(connection, name, addr)
         recieved = waitForMessage(connection)
@@ -88,7 +86,7 @@ def runOnlineServer():
                 return
 
             sendMessage(connection, str(board))
-            print("Waiting for {} to move".format(opponentName))
+            print("Waiting for {} to move...".format(opponentName))
             while True:
                 opponentMove = waitForMessage(connection)
                 try:
@@ -108,10 +106,17 @@ def runOnlineServer():
             closeSocket(connection)
         sys.exit()
 
-def connectOnlineServer(host=None):
-    name = input("What's your name [Black] ? ")
-    name = name if name else "Black"
-    if not host:
+def connectOnlineServer(host, name="Black"):
+    try:
+        s = connectSocket(host, PORT_NUMBER)
+    except:
+        choice = input("Host didn't respond. " 
+                    "Search local network for a host [Yn] ? ").lower()
+        if 'y' in choice:
+            s = None
+        else:
+            sys.exit()
+    if s is None:
         subnet = '192.168.1.'
         hostsAttempted = 0
         for i in range(0, 256):
@@ -127,13 +132,7 @@ def connectOnlineServer(host=None):
                 hostsAttempted += 1
         if s is None:
             print("{} hosts attempted, none were available".format(hostsAttempted))
-            sys.exit()
-    else:
-        try:
-            s = connectSocket(host, PORT_NUMBER)
-        except:
-            print("Host didn't respond.")
-            sys.exit()
+            sys.exit()        
     try:
         print()
         print("Connecting to {}".format(host))
@@ -158,14 +157,14 @@ def connectOnlineServer(host=None):
                 closeSocket(s)
                 return
             if not msg:
-                print("Disconnected.")
+                print("Opponent disconnected.")
                 closeSocket(s)
                 sys.exit()
 
             print()
             print(msg)
             print()
-            print("Waiting for {} to move".format(opponentName))
+            print("Waiting for {} to move...".format(opponentName))
             msg = waitForMessage(s)
             if msg in ("stalemate", "checkmate"):
                 if msg == "checkmate":
@@ -175,7 +174,7 @@ def connectOnlineServer(host=None):
                 closeSocket(s)
                 return
             if not msg:
-                print("Disconnected.")
+                print("Opponent disconnected.")
                 closeSocket(s)
                 sys.exit()
 
